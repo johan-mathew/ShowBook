@@ -1,0 +1,151 @@
+$db="Provider=MSDASQL.1;Persist Security Info=False;Extended Properties='Driver=MySQL ODBC 5.3 ANSI Driver;UID=root;DATABASE=bookmovies;PORT=3306'"
+//Provider=MSDASQL.1;Persist Security Info=False;Extended Properties="Driver=MySQL ODBC 5.3 ANSI Driver;UID=root;DATABASE=bookmovies;PORT=3306;COLUMN_SIZE_S32=1"
+MAIN:
+	
+	answer 1
+	
+	play "welcome.wav"
+	
+	*** Insert your code here ***
+	$choice=accept("choice.wav",1,3,4,"12")
+	if $choice==1
+		goto BOOK
+	else
+		goto STATUS
+	endif
+	
+	
+	hangup
+	goto MAIN
+	
+	
+	
+	* User has hung up
+ONHANGUP:
+	hangup
+	goto MAIN
+	
+	
+	* Time allowed for user is over
+ONTIMEOUT:
+ONRUNTIMEOUT:
+	hangup
+	goto MAIN
+	
+	
+	* An error has occurred
+ONSYSTEMERROR:
+	log $error
+	display $error
+	if $debug
+		msgbox($error)
+	endif
+	hangup
+	goto MAIN
+BOOK:
+	//IVR CALL by accepting various values
+	$i=1
+	$sql=format("SELECT MAX(CUST_ID) as maxid FROM BOOKING_DETAILS")
+	$cid=db.runsql($db,$sql)
+	$sql=format("SELECT DISTINCT MOVIE_NAME  FROM MOVIES")
+	$result=db.open($db,$sql)
+	if $cid.maxid != ""
+		$cid  =$cid.maxid+1
+	else
+		$cid=1
+	endif
+	while not $result.eof
+		speak "press"
+		speak $i
+		speak "for"
+		speak $result.MOVIE_NAME
+		$i=$i+1
+		$result = db.skip()
+	endwhile
+	$screenno=input(1,4)
+	play "show.wav"
+	$showtime=input(1,4)
+	play "seatno.wav"
+	$seatno=input(2,4)
+	//Checking availabilty of tickets
+	$sql= format("SELECT AVAILABLE from AVAILABILITY_SEATS WHERE SCREEN_NO=%s and TIME_ID=%s",$screenno,$showtime)
+	$avail=db.runsql($db,$sql)
+	if $avail.AVAILABLE < $seatno
+		speak "seats are Unavailable."
+		goto BYE
+	else
+		//UPdating availability
+		$seatrange=concat($avail.AVAILABLE, ' to ')
+		$newal= $avail.AVAILABLE-$seatno
+		$seatrange=concat($seatrange,$newal)
+		$sql= format("UPDATE AVAILABILITY_SEATS SET AVAILABLE = %s WHERE SCREEN_NO=%s and TIME_ID=%s",$newal,$screenno,$showtime)
+		$update=db.runsql($db,$sql)
+		speak "Seats are available..booking in progresss"
+		
+		//Updating BOOKING_DETAILS table
+		$sql= format("SELECT MOVIE_NAME from MOVIES where SCREEN_NO=%s",$screenno)
+		$result=db.runsql($db,$sql)
+		$moviename=$result.MOVIE_NAME
+		$sql= format("INSERT INTO BOOKING_DETAILS VALUES(%s,'%s',%s,%s,'%s',%s)",$cid,$moviename,$seatno,$screenno,$seatrange,$showtime)
+		$result=db.runsql($db,$sql)
+	endif
+	
+	speak " Your booking id is" $cid
+	
+	
+	hangup
+	goto MAIN
+STATUS:
+	$id=accept("bookingid.wav",5,4)
+	$sql=format("SELECT * FROM BOOKING_DETAILS WHERE CUST_ID=%s",$id)
+	$result=db.runsql($db,$sql)
+	if $result.eof
+		speak "No booking for this ID"
+		goto GOODBYE
+	endif
+	$movie = $result.MOVIE_NAME
+	$seat = $result.SEAT
+	$screen = $result.SCREEN_NO
+	$timeid = $result.TIME_ID
+	if $timeid==1
+		$showtime=9
+elseif $timeid==2
+	$showtime=12
+else
+	$showtime=10
+endif
+
+play "status.wav"
+speak "You have booked "
+speak $seat
+speak "tickets for"
+speak $movie
+speak "Your show time is"
+speak $showtime
+if $timeid==9
+	speak "A M"
+else
+	speak "P M"
+endif
+speak "Your screen number is"
+speak $screen
+speak "The booked seats are"
+speak $result.SEAT_RANGE
+speak "Thank you for booking"
+
+
+hangup
+goto MAIN
+
+
+
+
+//Checking customer id
+GOODBYE:
+	speak " No booking for this id"
+	hangup
+	goto MAIN
+BYE:
+	
+	hangup
+	goto MAIN

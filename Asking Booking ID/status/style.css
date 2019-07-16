@@ -1,0 +1,53 @@
+.split {
+  height: 100%;
+  width: 30%;
+  position: fixed;
+ 
+}
+.h3{
+    text-align: center;
+}
+.left {
+  width: 70%;
+  top: 0;
+  left: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  display: inline;
+  margin-top: 0%;
+opacity: 0.5;
+
+}
+
+.right {
+    width: right;
+    right: 0;
+    top: 0;
+    display: inline;
+    
+}
+.booking {
+    border-radius: 20px;
+	font-family: 'Poppins', sans-serif;
+	font-weight: 700;
+    margin-left: 15%;
+    margin-right: 15%;
+    font-size: 20px;
+    margin-top: 30%;
+    height: 60%;
+    background: linear-gradient(to bottom right, #00ffff 20%, #0066ff 84%);
+    z-index: 1000;
+    opacity: 0.49;
+}
+#particles-js{ 
+  border-block-start-width: 0px;
+  background: black;
+  
+}
+button{
+  background: linear-gradient(to bottom right, #00ffff 20%, #0066ff 84%);
+  text-align: center;
+  border: none;
+  margin-left: 45%;
+}
