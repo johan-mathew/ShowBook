@@ -3,7 +3,7 @@ Website for booking movie tickets.
 
 Contributers:
 >>Johan K Mathew
->>github:https://github.com/mathewjo99
+>>https://github.com/mathewjo99
 
 >>Atul A
->>github:https://github.com/KowalskiA
+>>:https://github.com/KowalskiA
